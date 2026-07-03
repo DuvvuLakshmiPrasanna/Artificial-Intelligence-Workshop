@@ -1,0 +1,164 @@
+{
+  "name": "Job Notifications",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {}
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        0,
+        0
+      ],
+      "id": "34ecdb87-55e7-497a-9bf0-455c16616707",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "url": "https://hnrss.org/jobs",
+        "options": {
+          "customFields": "limit =10",
+          "ignoreSSL": false
+        }
+      },
+      "type": "n8n-nodes-base.rssFeedRead",
+      "typeVersion": 1.2,
+      "position": [
+        208,
+        0
+      ],
+      "id": "267ae90b-738c-4b14-83a6-ebde3ed996d6",
+      "name": "RSS Read"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.groq.com/openai/v1/chat/completions",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": " Bearer pasteToken"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"model\": \"llama-3.1-8b-instant\",\n  \"messages\": [\n    {\n      \"role\": \"user\",\n      \"content\": \"You are a placement assistant for a final year CSE student in India. Find only India, Remote, Freshers and Internship opportunities. For each opportunity provide Company Name, Role, Location, Apply Link, Source and Posted Date. Return the latest 20 opportunities.\"\n    }\n  ],\n  \"temperature\": 0.2\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        416,
+        0
+      ],
+      "id": "2cb1452e-33d4-4fd4-8225-923b6c2d97b5",
+      "name": "HTTP Request",
+      "executeOnce": true
+    },
+    {
+      "parameters": {
+        "fromEmail": "prasannayadav2468@gmail.com",
+        "toEmail": "prasannayadav2468@gmail.com",
+        "subject": "=Daily Job & Internship Digest - {{$now.format(\"dd MMM yyyy\")}}",
+        "html": "=<h2>🚀 Daily Job & Internship Digest</h2>\n\n<p>Latest opportunities collected automatically.</p>\n\n<pre>\n{{ $json.choices[0].message.content }}\n</pre>\n\n<hr>\n\n<p>Generated automatically by n8n.</p>",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        624,
+        0
+      ],
+      "id": "c941d7b9-1509-4d27-8f78-1fe7785bdd8b",
+      "name": "Send an Email",
+      "webhookId": "1938669f-3078-4211-8bdb-2d0be305b6e3",
+      "executeOnce": true,
+      "credentials": {
+        "smtp": {
+          "id": "ArUV1W8Ao40sP0eK",
+          "name": "SMTP account"
+        }
+      }
+    }
+  ],
+  "pinData": {
+    "Schedule Trigger": [
+      {
+        "json": {
+          "timestamp": "2026-06-11T14:30:51.301+05:30",
+          "Readable date": "June 11th 2026, 2:30:51 pm",
+          "Readable time": "2:30:51 pm",
+          "Day of week": "Thursday",
+          "Year": "2026",
+          "Month": "June",
+          "Day of month": "11",
+          "Hour": "14",
+          "Minute": "30",
+          "Second": "51",
+          "Timezone": "Asia/Calcutta (UTC+05:30)"
+        }
+      }
+    ]
+  },
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "RSS Read",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "RSS Read": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Send an Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "56ecbb92-f8be-46dd-a672-c8c5e5687248",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "511544050cf8152d8ff590be4599beccc9b4524807b50a2463014b012a34e86d"
+  },
+  "nodeGroups": [],
+  "id": "eMnOnEObhzDcpHro",
+  "tags": []
+}
